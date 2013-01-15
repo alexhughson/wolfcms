@@ -46,7 +46,7 @@ $PDO->exec("CREATE TABLE ".TABLE_PREFIX."layout (
   id int(11) unsigned NOT NULL auto_increment,
   name varchar(100) default NULL,
   content_type varchar(80) default NULL,
-  content text,
+  content_file varchar(120) default NULL,
   created_on datetime default NULL,
   updated_on datetime default NULL,
   created_by_id int(11) default NULL,

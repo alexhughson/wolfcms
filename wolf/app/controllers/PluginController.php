@@ -114,15 +114,11 @@ class PluginController extends Controller {
     }
 
     private function executeFrontendLayout() {
-        $sql = 'SELECT content_type, content FROM '.TABLE_PREFIX.'layout WHERE name = '."'$this->frontend_layout'";
 
-        Record::logQuery($sql);
-
-        $stmt = Record::getConnection()->prepare($sql);
-        $stmt->execute();
-
-        $layout = $stmt->fetchObject();
-
+        $layout = Layout::find(array(
+            'where' => 'name ='."'$this->frontend_layout''",
+            'limit' => 1
+        ));
         if ($layout) {
             // If content-type is not set, we set text/html by default.
             if ($layout->content_type == '') {
@@ -135,9 +131,9 @@ class PluginController extends Controller {
             // Provides compatibility with the Page class.
             // @todo Find cleaner way of doing multiple inheritance
             $this->url = CURRENT_URI;
-
+            $layout_content = $layout->get_content();
             // Execute the layout code.
-            eval('?>'.$layout->content);
+            eval('?>'.$layout_content);
         }
     }
 

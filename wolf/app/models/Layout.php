@@ -24,7 +24,7 @@ class Layout extends Record {
 
     public $name;
     public $content_type;
-    public $content;
+    public $content_file;
 
     public $created_on;
     public $updated_on;
@@ -41,6 +41,43 @@ class Layout extends Record {
         $this->updated_by_id = AuthUser::getId();
         $this->updated_on = date('Y-m-d H:i:s');
         return true;
+    }
+
+    public function beforeSave() {
+        $this->ensure_file_name();
+
+        if($this->get_file_name() != $this->content_file) {
+            rename($this->content_file, $this->get_file_name());
+            $this->content_file = $this->get_file_name();
+        }
+
+        return true;
+    }
+
+    public function set_content($new_content) {
+        $this->ensure_file_name();
+        if (!is_null($new_content)){
+            file_put_contents($this->content_file, $new_content);
+        }
+    }
+
+    public function get_content(){
+
+        if( file_exists( $this->content_file)) {
+            return file_get_contents($this->content_file);
+        } else {
+            return "";
+        }
+    }
+
+    private function ensure_file_name() {
+        if ( is_null($this->content_file) || strlen($this->content_file) == 0 ) {
+            $this->content_file = $this->get_file_name();
+        }
+    }
+
+    private function get_file_name() {
+        return  CMS_ROOT . "/templates/" . $this->name . ".php";
     }
 
     public static function find($args = null) {
@@ -63,7 +100,7 @@ class Layout extends Record {
         $sql = "SELECT $tablename.id as id,
                        $tablename.name as name,
                        $tablename.content_type as content_type,
-                       $tablename.content as content,
+                       $tablename.content_file as content_file,
                        $tablename.created_on as created_on,
                        $tablename.updated_on as updated_on,
                        creator.name AS created_by_name, updator.name AS updated_by_name

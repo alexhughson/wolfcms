@@ -59,22 +59,27 @@ class LayoutController extends Controller {
 
         // check if user have already enter something
         $layout = Flash::get('post_data');
-
+        $layout_content = Flash::get('layout_content');
         if (empty($layout))
             $layout = new Layout;
+        if(is_null($layout_content) || empty($layout_content)) {
+            $layout_content = "";
+        }
 
         $this->display('layout/edit', array(
             'csrf_token' => SecureToken::generateToken(BASE_URL.'layout/add'),
             'action' => 'add',
-            'layout' => $layout
+            'layout' => $layout,
+            'layout_content' => $layout_content
         ));
     }
 
 
     function _add() {
         $data = $_POST['layout'];
+        $layout_content = $_POST['layout_content'];
         Flash::set('post_data', (object) $data);
-
+        Flash::set('layout_content', $layout_content);
         // CSRF checks
         if (isset($_POST['csrf_token'])) {
             $csrf_token = $_POST['csrf_token'];
@@ -105,6 +110,7 @@ class LayoutController extends Controller {
             redirect(get_url('layout/add'));
         }
         else {
+            $layout->set_content($layout_content);
             Flash::set('success', __('Layout has been added!'));
             Observer::notify('layout_after_add', $layout);
         }
@@ -127,11 +133,13 @@ class LayoutController extends Controller {
         if (get_request_method() == 'POST')
             return $this->_edit($id);
 
+        $layout_content = $layout->get_content();
         // display things...
         $this->display('layout/edit', array(
             'csrf_token' => SecureToken::generateToken(BASE_URL.'layout/edit'),
             'action' => 'edit',
-            'layout' => $layout
+            'layout' => $layout,
+            'layout_content' => $layout_content
         ));
     }
 
@@ -163,6 +171,7 @@ class LayoutController extends Controller {
             redirect(get_url('layout/edit/'.$id));
         }
         else {
+            $layout->set_content($_POST["layout_content"]);
             Flash::set('success', __('Layout has been saved!'));
             Observer::notify('layout_after_edit', $layout);
         }
@@ -176,6 +185,7 @@ class LayoutController extends Controller {
 
 
     function delete($id) {
+        // TODO: delete the layout file as well
         // find the layout to delete
         if ($layout = Record::findByIdFrom('Layout', $id)) {
             if ($layout->isUsed())
@@ -202,6 +212,30 @@ class LayoutController extends Controller {
             $layout->position = (int) $position + 1;
             $layout->save();
         }
+    }
+
+    function discover_layouts() {
+        $layouts = scandir( CMS_ROOT . "/templates");
+        foreach( $layouts as $layout_file ) {
+
+            $layout_path = CMS_ROOT . "/templates/" . $layout_file;
+            if(!is_dir($layout_path . "/")) {
+                $db_record = Layout::find(array(
+                    "where"=> "content_file = $layout_path",
+                    "limit"=>1
+                ));
+
+                if(!$db_record){
+                    $new_layout = new Layout();
+                    $new_layout->content_file = $layout_path;
+                    $new_layout->content_type = "text/html";
+                    $new_layout->name = basename($layout_file, ".php");
+                    $save_result = $new_layout->save();
+
+                }
+            }
+        }
+        redirect(get_url('layout/index'));
     }
 
 }

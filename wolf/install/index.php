@@ -27,7 +27,7 @@
  */
 
 // Make sure we hide ugly errrors
-error_reporting(0);
+error_reporting(1);
 
 define('INSTALL_SEQUENCE', true);
 

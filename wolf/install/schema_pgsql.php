@@ -49,7 +49,7 @@ $PDO->exec("CREATE TABLE ".TABLE_PREFIX."layout (
   id serial,
   name character varying(100) DEFAULT NULL,
   content_type character varying(80) DEFAULT NULL,
-  content text,
+  content_file character varying(80) DEFAULT NULL,
   created_on timestamp DEFAULT NULL,
   updated_on timestamp DEFAULT NULL,
   created_by_id integer DEFAULT NULL,

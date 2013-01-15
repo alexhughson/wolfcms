@@ -220,5 +220,6 @@ return array(
     'website:' => 'website:',    
     'Administrator' => 'Administrator',
     'Editor' => 'Editor',
-    'Developer' => 'Developer'
+    'Developer' => 'Developer',
+    'Check for filesystem templates' => 'Check for filesystem templates'
 );

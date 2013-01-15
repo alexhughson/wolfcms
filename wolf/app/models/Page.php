@@ -649,13 +649,15 @@ class Page extends Node {
 
     public function _executeLayout() {
 
-        $sql = 'SELECT content_type, content FROM '.TABLE_PREFIX.'layout WHERE id = :layout_id';
+        /*$sql = 'SELECT content_type, content, content_file FROM '.TABLE_PREFIX.'layout WHERE id = :layout_id';
 
-        $stmt = Record::getConnection()->prepare($sql);
+        $stmt = Layout::getConnection()->prepare($sql);
 
-        $stmt->execute(array(':layout_id' => $this->_getLayoutId()));
+        $stmt->execute(array(':layout_id' => $this->_getLayoutId()));*/
 
-        if ($layout = $stmt->fetchObject()) {
+        //if ($layout = $stmt->fetchObject("Layout")) {
+        $layout = Layout::findById($this->_getLayoutId());
+        if( $layout) {
             // if content-type not set, we set html as default
             if ($layout->content_type == '')
                 $layout->content_type = 'text/html';
@@ -664,10 +666,10 @@ class Page extends Node {
             header('Content-Type: '.$layout->content_type.'; charset=UTF-8');
 
             Observer::notify('page_before_execute_layout');
-
+            $layout_content = $layout->get_content();
             // execute the layout code
-            eval('?'.'>'.$layout->content);
-            // echo $layout->content;
+            eval('?'.'>'.$layout_content);
+
         }
     }
 
